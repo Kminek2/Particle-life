@@ -3,12 +3,15 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class Particle : MonoBehaviour
 {
+    #region Private variables
     //Below values are serialized for debugging
     [SerializeField] private ParticleSO _particle;
     [SerializeField] private Vector3 _velocity;
     private SpriteRenderer _spriteRenderer;
     private static Bounds _playAreaBounds;
+    #endregion
 
+    #region Getters and Setters
     public ParticleSO ParticleSO
     {
         get { return _particle; }
@@ -30,19 +33,15 @@ public class Particle : MonoBehaviour
         get { return _playAreaBounds; }
         set { _playAreaBounds = value; }
     }
+    #endregion
 
+    #region Setup functions
     private void Awake()
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
         // For serialization
         if (_particle != null)
             SetSprite();
-    }
-
-    private void Update()
-    {
-        Move();
-        BoundsTeleport();
     }
 
     private void SetSprite()
@@ -55,6 +54,15 @@ public class Particle : MonoBehaviour
         //Private settings
         _spriteRenderer.color = _particle.color;
     }
+    #endregion
+
+    private void Update()
+    {
+        Move();
+        BoundsTeleport();
+    }
+
+    #region Movement functions
 
     private void Move()
     {
@@ -78,4 +86,6 @@ public class Particle : MonoBehaviour
         Vector3 areaPos = new(x, y, z);
         transform.position = areaPos + playAreaMin;
     }
+
+    #endregion
 }

@@ -2,10 +2,12 @@ using UnityEngine;
 
 public class ParticleSpawner : MonoBehaviour
 {
+    #region Serialized variables
     [SerializeField] Collider2D playArea;
     [SerializeField] SpawnSettingsSO spawnSettings;
     [SerializeField] Particle particlePrefab;
     [SerializeField] Transform particleParent;
+    #endregion
 
     private void Start()
     {
@@ -27,6 +29,7 @@ public class ParticleSpawner : MonoBehaviour
         }
     }
 
+    #region Single particle spawning functions
     private void SetUpParticle(Particle particle, ParticleSpawnSettings spawnSettings)
     {
         ParticleSO particleSO = spawnSettings.particle;
@@ -43,7 +46,9 @@ public class ParticleSpawner : MonoBehaviour
         Quaternion rot = GetRandomRotation();
         return Instantiate(particlePrefab, pos, rot, particleParent);
     }
+    #endregion
 
+    #region Helper functions
     private Vector2 GetRandomNormalizedVec2()
     {
         float x = Random.Range(-1f, 1f);
@@ -71,4 +76,5 @@ public class ParticleSpawner : MonoBehaviour
     {
         return Quaternion.identity;
     }
+    #endregion
 }
