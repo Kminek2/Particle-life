@@ -3,8 +3,9 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class Particle : MonoBehaviour
 {
+    //Below values are serialized for debugging
     [SerializeField] private ParticleSO _particle;
-    [SerializeField] private Vector3 velocity;
+    [SerializeField] private Vector3 _velocity;
     private SpriteRenderer spriteRenderer;
 
     public ParticleSO ParticleSO
@@ -15,6 +16,12 @@ public class Particle : MonoBehaviour
             _particle = value;
             SetSprite();
         }
+    }
+
+    public Vector3 Velocity
+    {
+        get { return _velocity; }
+        set { _velocity = value; }
     }
 
     private void Awake()
@@ -43,6 +50,6 @@ public class Particle : MonoBehaviour
 
     private void Move()
     {
-        transform.position += velocity * Time.deltaTime;
+        transform.position += _velocity * Time.deltaTime;
     }
 }
