@@ -6,7 +6,8 @@ public class Particle : MonoBehaviour
     //Below values are serialized for debugging
     [SerializeField] private ParticleSO _particle;
     [SerializeField] private Vector3 _velocity;
-    private SpriteRenderer spriteRenderer;
+    private SpriteRenderer _spriteRenderer;
+    private static Bounds _playAreaBounds;
 
     public ParticleSO ParticleSO
     {
@@ -24,9 +25,15 @@ public class Particle : MonoBehaviour
         set { _velocity = value; }
     }
 
+    public static Bounds PlayAreaBounds
+    {
+        get { return _playAreaBounds; }
+        set { _playAreaBounds = value; }
+    }
+
     private void Awake()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
         // For serialization
         if (_particle != null)
             SetSprite();
@@ -35,21 +42,40 @@ public class Particle : MonoBehaviour
     private void Update()
     {
         Move();
+        BoundsTeleport();
     }
 
     private void SetSprite()
     {
         //Global settings
         ParticleSettingsSO settings = _particle.particleSettings;
-        spriteRenderer.sprite = settings.sprite;
-        spriteRenderer.transform.localScale = Vector3.one * settings.size;
+        _spriteRenderer.sprite = settings.sprite;
+        _spriteRenderer.transform.localScale = Vector3.one * settings.size;
 
         //Private settings
-        spriteRenderer.color = _particle.color;
+        _spriteRenderer.color = _particle.color;
     }
 
     private void Move()
     {
         transform.position += _velocity * Time.deltaTime;
+    }
+
+    private void BoundsTeleport()
+    {
+        Vector3 pos = transform.position;
+        Vector3 playAreaMin = PlayAreaBounds.min;
+        Vector3 playAreaSize = PlayAreaBounds.size;
+
+        Vector3 playAreaAlignedPos = pos - playAreaMin;
+        Vector3 playAreaPositivePos = playAreaAlignedPos + playAreaSize;
+
+        //New pos
+        float x = playAreaSize.x == 0 ? 0 : playAreaPositivePos.x % playAreaSize.x;
+        float y = playAreaSize.y == 0 ? 0 : playAreaPositivePos.y % playAreaSize.y;
+        float z = playAreaSize.z == 0 ? 0 : playAreaPositivePos.z % playAreaSize.z;
+
+        Vector3 areaPos = new(x, y, z);
+        transform.position = areaPos + playAreaMin;
     }
 }

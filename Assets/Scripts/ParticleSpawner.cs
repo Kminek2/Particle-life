@@ -9,6 +9,7 @@ public class ParticleSpawner : MonoBehaviour
 
     private void Start()
     {
+        Particle.PlayAreaBounds = playArea.bounds;
         SpawnAll();
     }
 
