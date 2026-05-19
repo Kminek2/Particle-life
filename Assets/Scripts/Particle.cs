@@ -88,4 +88,65 @@ public class Particle : MonoBehaviour
     }
 
     #endregion
+
+    #region Interaction functions
+    public void Attract(Particle attractionParticle, ParticleAttraction attractionRule)
+    {
+        Vector3 attraction = CalculateAttraction(attractionParticle, attractionRule);
+        _velocity += attraction * Time.deltaTime;
+    }
+
+    public Vector3 CalculateAttraction(Particle attractionParticle, ParticleAttraction attractionRule)
+    {
+        Vector3 pos = transform.position;
+        Vector3 otherPos = attractionParticle.transform.position;
+        Vector3 insidePosDiff = otherPos - pos;
+        Vector3 posDiff = GetBoundPosDiff(insidePosDiff);
+        Vector3 otherDir = posDiff.normalized;
+        Debug.Log(otherDir);
+        float dist = posDiff.magnitude;
+
+        float attractionForce = attractionRule.force;
+        float attraction = attractionForce / (dist * dist);
+
+        return otherDir * attraction;
+    }
+
+    /// <summary>
+    /// Returns the Vec3 wrapped around the bound. Used for making the distance closest on wrapped worlds. (Where bounds mean teleport to the other side) 
+    /// </summary>
+    /// <param name="dist">The distance to be wrapped</param>
+    /// <returns></returns>
+    private Vector3 GetBoundPosDiff(Vector3 dist)
+    {
+        Vector3 boundsExtends = _playAreaBounds.extents;
+
+        float x = GetBoundVariable(dist.x, boundsExtends.x);
+        float y = GetBoundVariable(dist.y, boundsExtends.y);
+        float z = GetBoundVariable(dist.z, boundsExtends.z);
+
+        Vector3 aroundDist = new(x, y, z);
+
+        return aroundDist;
+    }
+
+    /// <summary>
+    /// Returns the variable wrapped around the bound. Used for making the distance closest on wrapped worlds. (Where bounds mean teleport to the other side) 
+    /// </summary>
+    /// <param name="x">distance for wrapping</param>
+    /// <param name="extends">bounds extends</param>
+    /// <returns></returns>
+    private float GetBoundVariable(float x, float extends)
+    {
+        if (Mathf.Abs(x) > extends)
+        {
+            if (x < 0)
+                x += extends * 2;
+            else
+                x -= extends * 2;
+        }
+
+        return x;
+    }
+    #endregion
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ParticleSpawner : MonoBehaviour
@@ -12,21 +13,32 @@ public class ParticleSpawner : MonoBehaviour
     private void Start()
     {
         Particle.PlayAreaBounds = playArea.bounds;
-        SpawnAll();
+        Dictionary<ParticleSO, List<Particle>> spawnedParticles = SpawnAll();
+        ParticleInteractions.Instance.Particles = spawnedParticles;
     }
 
-    private void SpawnAll()
+    /// <summary>
+    /// Spawns all particles set in spawnSettings
+    /// </summary>
+    /// <returns>Dictionary off all spawned particles grouped by their class</returns>
+    private Dictionary<ParticleSO, List<Particle>> SpawnAll()
     {
+        Dictionary<ParticleSO, List<Particle>> particles = new();
         foreach (ParticleSpawnSettings particleSpawnSettings in spawnSettings.particleNum)
         {
             ParticleSO particleSO = particleSpawnSettings.particle;
+            particles.Add(particleSO, new());
+
             int spawnNum = particleSpawnSettings.num;
             for (int i = 0; i < spawnNum; i++)
             {
                 Particle particle = InstantiateParticle(particleSO);
                 SetUpParticle(particle, particleSpawnSettings);
+                particles[particleSO].Add(particle);
             }
         }
+
+        return particles;
     }
 
     #region Single particle spawning functions
