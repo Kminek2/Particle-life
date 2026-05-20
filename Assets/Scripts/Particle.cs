@@ -60,9 +60,18 @@ public class Particle : MonoBehaviour
     {
         Move();
         BoundsTeleport();
+        VelocityDumping();
     }
 
     #region Movement functions
+
+    private void VelocityDumping()
+    {
+        float dumping = _particle.particleSettings.dumping;
+        float frameDumping = dumping * Time.deltaTime;
+        float velocityPercentLeft = 1 - frameDumping;
+        _velocity *= velocityPercentLeft;
+    }
 
     private void Move()
     {
@@ -103,13 +112,25 @@ public class Particle : MonoBehaviour
         Vector3 insidePosDiff = otherPos - pos;
         Vector3 posDiff = GetBoundPosDiff(insidePosDiff);
         Vector3 otherDir = posDiff.normalized;
-        Debug.Log(otherDir);
         float dist = posDiff.magnitude;
 
-        float attractionForce = attractionRule.force;
-        float attraction = attractionForce / (dist * dist);
+        float attraction = GetAttraction(attractionRule, dist);
 
         return otherDir * attraction;
+    }
+
+    private float GetAttraction(ParticleAttraction attractionRule, float dist)
+    {
+        float attractionForce = attractionRule.force;
+
+        // To keep particles enough away to avoid near infinite speeds
+        float pushDistance = _particle.particleSettings.pushDistance;
+        if (dist < _particle.particleSettings.pushDistance)
+            attractionForce = -Mathf.Abs(attractionForce) - _particle.particleSettings.pushForce;
+
+        float attraction = attractionForce / (dist * dist);
+
+        return attraction;
     }
 
     /// <summary>

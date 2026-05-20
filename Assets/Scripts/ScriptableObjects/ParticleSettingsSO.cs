@@ -4,6 +4,10 @@ using UnityEngine;
 public class ParticleSettingsSO : ScriptableObject
 {
     public Sprite sprite;
-    
+
     public float size;
+
+    public float dumping;
+    public float pushDistance;
+    public float pushForce;
 }

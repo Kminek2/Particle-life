@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpawnSettingsSO
   particleNum:
   - particle: {fileID: 11400000, guid: b5e0ec3999a144d4a9dee7ef2d230adf, type: 2}
-    num: 2
-    spawnVelocity: 0
+    num: 10
+    spawnVelocity: 10
