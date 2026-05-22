@@ -180,7 +180,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 20, y: 10}
+  m_Size: {x: 100, y: 100}
   m_EdgeRadius: 0
 --- !u!4 &469397459
 Transform:
@@ -255,6 +255,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1065652464}
   - component: {fileID: 1065652465}
+  - component: {fileID: 1065652466}
   m_Layer: 0
   m_Name: Particles
   m_TagString: Untagged
@@ -284,11 +285,25 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1065652463}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f980c89d83c50424695d95bcc2a69a9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParticleInteractions
+--- !u!114 &1065652466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1065652463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91cd0f6774d526548aeb44d1474fdc52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaderParticleInteractionsManager
+  _playArea: {fileID: 469397458}
+  _computeShader: {fileID: 7200000, guid: 8c669992724e21b49b73562bccca6c27, type: 3}
 --- !u!1 &2009239140
 GameObject:
   m_ObjectHideFlags: 0

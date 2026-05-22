@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ParticleSO
   attractions:
   - particle: {fileID: 11400000, guid: c27737137475dfe4b91d772502508366, type: 2}
-    force: 20
+    force: 25
+  - particle: {fileID: 11400000}
+    force: 15
   particleSettings: {fileID: 11400000, guid: 9fa5f2d22e7a9ae4b9cf38029aaf9050, type: 2}
   color: {r: 1, g: 0, b: 0, a: 1}

@@ -15,6 +15,7 @@ public class ParticleSpawner : MonoBehaviour
         Particle.PlayAreaBounds = playArea.bounds;
         Dictionary<ParticleSO, List<Particle>> spawnedParticles = SpawnAll();
         ParticleInteractions.Instance.Particles = spawnedParticles;
+        ShaderParticleInteractionsManager.Instance.Particles = spawnedParticles;
     }
 
     /// <summary>

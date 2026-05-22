@@ -1,0 +1,80 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+struct Particle
+{
+    float3 position;
+    float3 velocity;
+    int type;
+};
+
+struct ParticleType
+{
+    float dumping;
+    int interactionsStart;
+    int interactionsEnd;
+};
+
+struct ParticleInteractions
+{
+    int type;
+    float force;
+    float pushDst;
+    float pushForce;
+};
+
+float DeltaTime;
+float3 PlayAreaMin;
+float3 PlayAreaSize;
+StructuredBuffer<ParticleType> ParticlesTypes;
+StructuredBuffer<ParticleInteractions> ParticlesInteractions;
+RWStructuredBuffer<Particle> Particles;
+uint ParticlesLength;
+
+float3 Move(float3 pos, float3 velocity);
+float3 BoundsTeleport(float3 pos);
+float3 DumpVelocity(float3 velocity, ParticleType type);
+float BoundVariable(float var, float boundSize);
+
+[numthreads(64,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if(id.x > ParticlesLength)
+        return;
+    Particle particle = Particles[id.x];
+    ParticleType particleType = ParticlesTypes[particle.type];
+    particle.position = Move(particle.position, particle.velocity);
+    particle.position = BoundsTeleport(particle.position);
+    particle.velocity = DumpVelocity(particle.velocity, particleType);
+    Particles[id.x] = particle;
+}
+
+float3 BoundsTeleport(float3 pos)
+{
+    float3 playAreaAlignedPos = pos - PlayAreaMin;
+    float3 playAreaPositivePos = playAreaAlignedPos + PlayAreaSize;
+
+    //New pos
+    float x = BoundVariable(playAreaPositivePos.x, PlayAreaSize.x);
+    float y = BoundVariable(playAreaPositivePos.y, PlayAreaSize.y);
+    float z = BoundVariable(playAreaPositivePos.z, PlayAreaSize.z);
+
+    float3 areaPos = float3(x, y, z);
+    return areaPos + PlayAreaMin;
+}
+
+float BoundVariable(float var, float boundSize){
+    if(boundSize == 0)
+        return 0;
+    return var % boundSize;
+}
+
+float3 DumpVelocity(float3 velocity, ParticleType type){
+    float dumping = type.dumping * DeltaTime;
+    float velocityLeft = 1 - dumping;
+    return velocity * velocityLeft;
+}
+
+float3 Move(float3 pos, float3 velocity){
+    return pos + velocity * DeltaTime;
+}

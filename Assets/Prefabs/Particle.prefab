@@ -99,10 +99,10 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3770964911016168172}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d093ce246e2e44d45b0c1559d516e7e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Particle
   _particle: {fileID: 0}
-  velocity: {x: 0, y: 0, z: 0}
+  _velocity: {x: 0, y: 0, z: 0}
