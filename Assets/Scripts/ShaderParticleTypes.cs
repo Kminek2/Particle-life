@@ -14,6 +14,7 @@ public struct ShaderParticle
     public float3 position;
     public float3 velocity;
     public int type;
+    public int chunkId;
 };
 
 public struct ShaderParticleInteractions
@@ -29,3 +30,10 @@ public struct ParticleVisual
     public float4 color;
     public float radius;
 };
+
+public struct Chunks
+{
+    public float3 pos;
+    public int particlesStart;
+    public int particlesNum;
+}

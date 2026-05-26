@@ -9,23 +9,34 @@ StructuredBuffer<ParticleType> ParticlesTypes;
 StructuredBuffer<ParticleInteractions> ParticlesInteractions;
 RWStructuredBuffer<Particle> Particles;
 uint ParticlesLength;
+float4 chunkData; //2(size), 2(num)
 
 float3 Move(float3 pos, float3 velocity);
 float3 BoundsTeleport(float3 pos);
 float3 DumpVelocity(float3 velocity, ParticleType type);
 float BoundVariable(float var, float boundSize);
+int GetChunkId(float2 pos);
 
 [numthreads(64,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    if(id.x > ParticlesLength)
+    if(id.x >= ParticlesLength)
         return;
     Particle particle = Particles[id.x];
     ParticleType particleType = ParticlesTypes[particle.type];
     particle.position = Move(particle.position, particle.velocity);
     particle.position = BoundsTeleport(particle.position);
     particle.velocity = DumpVelocity(particle.velocity, particleType);
+    particle.chunkId = GetChunkId(particle.position.xy);
     Particles[id.x] = particle;
+}
+
+int GetChunkId(float2 pos){
+    pos -= PlayAreaMin.xy;
+    int chunkX = pos.x / chunkData.x;
+    int chunkY = pos.y / chunkData.y;
+
+    return chunkX + chunkData.z * chunkY;
 }
 
 float3 BoundsTeleport(float3 pos)

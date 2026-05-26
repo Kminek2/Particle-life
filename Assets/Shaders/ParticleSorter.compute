@@ -1,0 +1,27 @@
+#pragma kernel CSMain
+#include "Common.hlsl"
+
+RWStructuredBuffer<Particle> Particles;
+uint ParticlesLength;
+bool odd;
+
+[numthreads(64, 1, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    uint i = id.x * 2;
+
+    if(odd)
+        i++;
+    
+    if(i >= ParticlesLength)
+        return;
+    
+    int chunk1 = Particles[i].chunkId;
+    int chunk2 = Particles[i+1].chunkId;
+
+    if(chunk2 < chunk1){
+        Particle p = Particles[i];
+        Particles[i] = Particles[i+1];
+        Particles[i+1] = p;
+    }
+}

@@ -18,6 +18,8 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
     #region Shader Vars
 
     [SerializeField] ComputeShader _computeShader;
+    [SerializeField] ParticleChunker chunker;
+    [SerializeField] bool CPUChunking;
     private ComputeBuffer _particleTypesBuffer;
     private ComputeBuffer _particleInteractionsBuffer;
     private ComputeBuffer _particlesBuffer;
@@ -52,6 +54,11 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
         set { _particleTypesBuffer = value; }
     }
 
+    public Bounds PlayArea
+    {
+        get { return _playArea.bounds; }
+    }
+
     #endregion
 
     #region Init
@@ -67,6 +74,7 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
     private void Start()
     {
         InitShaderVariables();
+        chunker.SetupShader();
     }
 
     public void SetShaderData(ShaderParticleType[] shadersParticlesTypes, ShaderParticle[] shadersParticles, ShaderParticleInteractions[] shadersParticleInteractions)
@@ -85,11 +93,11 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
         _computeShader.SetVector("PlayAreaMin", _playBounds.min);
         _computeShader.SetVector("PlayAreaSize", _playBounds.size);
 
+        _shaderParticleCount = shadersParticles.Count();
+
         _particlesBuffer.SetData(shadersParticles);
         _computeShader.SetBuffer(_shaderKernel, "Particles", _particlesBuffer);
-        _computeShader.SetInt("ParticlesLength", shadersParticles.Count());
-
-        _shaderParticleCount = shadersParticles.Count();
+        _computeShader.SetInt("ParticlesLength", _shaderParticleCount);
     }
 
     void InitShaderVariables()
@@ -112,14 +120,23 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
     void Update()
     {
         DispatchComputes();
+        if (Time.frameCount < 10)
+            return;
+
+        if (!CPUChunking)
+            chunker.Chunk();
+        else
+            chunker.CPUChunk();
     }
 
     void DispatchComputes()
     {
         _computeShader.SetFloat("DeltaTime", Time.deltaTime);
+        _computeShader.SetVector("chunkData", new Vector4(chunker.ChunkSize.x, chunker.ChunkSize.y, chunker.ChunkNum.x, chunker.ChunkNum.y));
 
         _computeShader.Dispatch(_shaderKernel, Mathf.CeilToInt(_shaderParticleCount / 64.0f), 1, 1);
     }
+
 
     #endregion
 

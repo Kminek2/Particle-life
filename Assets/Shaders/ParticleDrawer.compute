@@ -3,13 +3,17 @@
 
 StructuredBuffer<ParticleType> ParticlesTypes;
 StructuredBuffer<Particle> Particles;
+StructuredBuffer<Chunk> Chunks;
 uint ParticlesLength;
 float3 pixelStart;
 float2 pixelSize;
+float4 chunkData; //2(size), 2(num)
+float3 PlayAreaMin;
 
 RWTexture2D<float4> Result;
 
 float4 GetParticleColor(Particle particle, float3 pixelPos);
+int PosToChunk(float3 pos);
 
 float3 GetPixelPos(uint2 pixelId){
     return float3(pixelId * pixelSize - pixelSize * 0.5 + pixelStart.xy, 0);
@@ -21,16 +25,34 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     uint width, height;
     Result.GetDimensions(width, height);
 
-    if(id.x > width || id.y > height)
+    if(id.x >= width || id.y >= height)
         return;
     float4 colorSum = 0;
 
-    for(uint i = 0; i < ParticlesLength; i++){
-        Particle particle = Particles[i];
-        colorSum += GetParticleColor(Particles[i], GetPixelPos(id.xy));
-        if(colorSum.a > 0) // Performance :(
-            break;
+    float3 pixelPos = GetPixelPos(id.xy);
+
+    for(float posX = pixelPos.x - chunkData.x; posX <= pixelPos.x + chunkData.x; posX += chunkData.x){
+        for(float posY = pixelPos.y - chunkData.y; posY <= pixelPos.y + chunkData.y; posY += chunkData.y){
+            float3 chunkCheckPos = float3(posX, posY, 0);
+            int chunkId = PosToChunk(chunkCheckPos);
+
+            Chunk chunk = Chunks[chunkId];
+
+            uint particlesNum = 0;
+            uint upperParticleLimit = chunk.particlesNum * 2;
+
+            for(uint i = 0; i < upperParticleLimit && particlesNum < chunk.particlesNum; i++){
+                uint particleI = chunk.particlesStart + i;
+                Particle particle = Particles[particleI];
+                colorSum += GetParticleColor(particle, pixelPos);
+                //if(colorSum.a > 0) // Performance :(
+                //    break;
+                particlesNum++;
+            }
+        }
     }
+
+    
 
     float4 color = colorSum / colorSum.w;
 
@@ -46,4 +68,12 @@ float4 GetParticleColor(Particle particle, float3 pixelPos){
     if(IsParticleInPixel(type, particle.position, pixelPos))
         return float4(type.visual.color);
     return 0;
+}
+
+int PosToChunk(float3 pos){
+    pos -= PlayAreaMin.xyz;
+    int chunkX = pos.x / chunkData.x;
+    int chunkY = pos.y / chunkData.y;
+
+    return chunkX + chunkData.z * chunkY;
 }

@@ -3,33 +3,38 @@ using UnityEngine.UI;
 
 public class ParticleDrawer : MonoBehaviour
 {
-    [SerializeField] ComputeShader computeShader;
-    [SerializeField] RawImage preview;
-    [SerializeField] Vector2Int resolution;
+    [SerializeField] ComputeShader _computeShader;
+    [SerializeField] RawImage _preview;
+    [SerializeField] Vector2Int _resolution;
+    [SerializeField] ParticleChunker _chunker;
 
-    RenderTexture rt;
+    RenderTexture _rt;
 
-    int kernel;
+    int _kernel;
 
-    Vector3 lastPixelStart = new();
-    Vector2 lastPixelSize = new();
+    Vector3 _lastPixelStart = new();
+    Vector2 _lastPixelSize = new();
 
     void Start()
     {
-        kernel = computeShader.FindKernel("CSMain");
+        _kernel = _computeShader.FindKernel("CSMain");
 
-        rt = new(resolution.x, resolution.y, 0);
-        rt.enableRandomWrite = true;
-        rt.Create();
+        _rt = new(_resolution.x, _resolution.y, 0);
+        _rt.enableRandomWrite = true;
+        _rt.Create();
 
-        preview.texture = rt;
+        _preview.texture = _rt;
 
         ShaderParticleInteractionsManager interactionsManager = ShaderParticleInteractionsManager.Instance;
 
-        computeShader.SetTexture(kernel, "Result", rt);
-        computeShader.SetBuffer(kernel, "ParticlesTypes", interactionsManager.ParticleTypesBuffer);
-        computeShader.SetBuffer(kernel, "Particles", interactionsManager.ParticleBuffer);
-        computeShader.SetInt("ParticlesLength", interactionsManager.ParticleBufferSize);
+        _computeShader.SetTexture(_kernel, "Result", _rt);
+        _computeShader.SetBuffer(_kernel, "ParticlesTypes", interactionsManager.ParticleTypesBuffer);
+        _computeShader.SetBuffer(_kernel, "Particles", interactionsManager.ParticleBuffer);
+        _computeShader.SetInt("ParticlesLength", interactionsManager.ParticleBufferSize);
+
+        _computeShader.SetBuffer(_kernel, "Chunks", _chunker.ChunkingBuffer);
+        _computeShader.SetVector("chunkData", new Vector4(_chunker.ChunkSize.x, _chunker.ChunkSize.y, _chunker.ChunkNum.x, _chunker.ChunkNum.y));
+        _computeShader.SetVector("PlayAreaMin", ShaderParticleInteractionsManager.Instance.PlayArea.min);
         UpdatePixelVars();
     }
 
@@ -37,21 +42,21 @@ public class ParticleDrawer : MonoBehaviour
     {
         UpdatePixelVars();
 
-        computeShader.Dispatch(kernel, Mathf.CeilToInt(rt.width / 8.0f), Mathf.CeilToInt(rt.height / 8.0f), 1);
+        _computeShader.Dispatch(_kernel, Mathf.CeilToInt(_rt.width / 8.0f), Mathf.CeilToInt(_rt.height / 8.0f), 1);
     }
 
     private void UpdatePixelVars()
     {
-        Vector3 pixelStart = preview.transform.position - preview.transform.lossyScale / 2;
-        Vector2 pixelSize = new(preview.transform.lossyScale.x / rt.width, preview.transform.lossyScale.y / rt.height);
+        Vector3 pixelStart = _preview.transform.position - _preview.transform.lossyScale / 2;
+        Vector2 pixelSize = new(_preview.transform.lossyScale.x / _rt.width, _preview.transform.lossyScale.y / _rt.height);
 
-        if (pixelStart != lastPixelStart)
-            computeShader.SetVector("pixelStart", pixelStart);
-        if (pixelSize != lastPixelSize)
-            computeShader.SetVector("pixelSize", pixelSize);
+        if (pixelStart != _lastPixelStart)
+            _computeShader.SetVector("pixelStart", pixelStart);
+        if (pixelSize != _lastPixelSize)
+            _computeShader.SetVector("pixelSize", pixelSize);
 
-        lastPixelStart = pixelStart;
-        lastPixelSize = pixelSize;
+        _lastPixelStart = pixelStart;
+        _lastPixelSize = pixelSize;
     }
 
 }

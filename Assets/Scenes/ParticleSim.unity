@@ -423,6 +423,7 @@ GameObject:
   - component: {fileID: 1065652465}
   - component: {fileID: 1065652466}
   - component: {fileID: 1065652467}
+  - component: {fileID: 1065652468}
   m_Layer: 0
   m_Name: Particles
   m_TagString: Untagged
@@ -471,6 +472,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShaderParticleInteractionsManager
   _playArea: {fileID: 469397458}
   _computeShader: {fileID: 7200000, guid: 8c669992724e21b49b73562bccca6c27, type: 3}
+  chunker: {fileID: 1065652468}
+  CPUChunking: 1
 --- !u!114 &1065652467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -483,9 +486,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b85b0b6250c464d8af668e86689daa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParticleDrawer
-  computeShader: {fileID: 7200000, guid: 6c9d45bab704624428fb2169b52b7231, type: 3}
-  preview: {fileID: 682184255}
-  resolution: {x: 680, y: 400}
+  _computeShader: {fileID: 7200000, guid: 6c9d45bab704624428fb2169b52b7231, type: 3}
+  _preview: {fileID: 682184255}
+  _resolution: {x: 1920, y: 1080}
+  _chunker: {fileID: 1065652468}
+--- !u!114 &1065652468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1065652463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b781d7ce1d6e47144a8e2181f06de91f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleChunker
+  _playArea: {fileID: 469397458}
+  _sortingShader: {fileID: 7200000, guid: caf1fd523b99dea4fad3b2ce191494f7, type: 3}
+  _chunkingShader: {fileID: 7200000, guid: 79394a6b9b7e1374c8d744f5a3ebe0f4, type: 3}
+  _sortingPasses: 10
+  _chunkNum: {x: 100, y: 100}
 --- !u!1 &1334621314
 GameObject:
   m_ObjectHideFlags: 0

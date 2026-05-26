@@ -7,6 +7,7 @@ struct Particle
     float3 position;
     float3 velocity;
     int type;
+    int chunkId;
 };
 
 struct ParticleVisual{
@@ -28,6 +29,13 @@ struct ParticleInteractions
     float force;
     float pushDst;
     float pushForce;
+};
+
+struct Chunk
+{
+    float3 pos;
+    int particlesStart;
+    int particlesNum;
 };
 
 #endif
