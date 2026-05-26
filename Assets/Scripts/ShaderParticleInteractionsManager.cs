@@ -98,6 +98,8 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
         _particlesBuffer.SetData(shadersParticles);
         _computeShader.SetBuffer(_shaderKernel, "Particles", _particlesBuffer);
         _computeShader.SetInt("ParticlesLength", _shaderParticleCount);
+
+        _computeShader.SetBuffer(_shaderKernel, "Chunks", chunker.ChunkingBuffer);
     }
 
     void InitShaderVariables()

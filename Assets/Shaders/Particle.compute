@@ -8,6 +8,7 @@ float3 PlayAreaSize;
 StructuredBuffer<ParticleType> ParticlesTypes;
 StructuredBuffer<ParticleInteractions> ParticlesInteractions;
 RWStructuredBuffer<Particle> Particles;
+StructuredBuffer<Chunk> Chunks;
 uint ParticlesLength;
 float4 chunkData; //2(size), 2(num)
 
@@ -16,6 +17,7 @@ float3 BoundsTeleport(float3 pos);
 float3 DumpVelocity(float3 velocity, ParticleType type);
 float BoundVariable(float var, float boundSize);
 int GetChunkId(float2 pos);
+float3 InteractionAcceleration(Particle particle);
 
 [numthreads(64,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -24,6 +26,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         return;
     Particle particle = Particles[id.x];
     ParticleType particleType = ParticlesTypes[particle.type];
+    particle.velocity += InteractionAcceleration(particle);
     particle.position = Move(particle.position, particle.velocity);
     particle.position = BoundsTeleport(particle.position);
     particle.velocity = DumpVelocity(particle.velocity, particleType);
@@ -31,12 +34,118 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     Particles[id.x] = particle;
 }
 
+float3 Acceleration(Particle p1, Particle p2);
+
+float3 InteractionAcceleration(Particle particle){
+    float3 pos = particle.position;
+    float3 a = 0;
+    for(float posX = pos.x - chunkData.x; posX <= pos.x + chunkData.x; posX += chunkData.x){
+        for(float posY = pos.y - chunkData.y; posY <= pos.y + chunkData.y; posY += chunkData.y){
+            float3 chunkCheckPos = float3(posX, posY, 0);
+            int chunkId = GetChunkId(chunkCheckPos.xy);
+
+            if(chunkId < 0 || chunkId >= chunkData.z * chunkData.w)
+                continue;
+
+            Chunk chunk = Chunks[chunkId];
+            int chunkStart = chunk.particlesStart;
+            if (chunkStart < 0)
+                continue;
+
+            uint particlesNum = 0;
+            uint upperParticleLimit = chunk.particlesNum * 2;
+
+            for(uint i = 0; i < upperParticleLimit && particlesNum < chunk.particlesNum; i++){
+                int particleI = chunkStart + int(i);
+                if (particleI >= int(ParticlesLength))
+                    break;
+
+                Particle particle2 = Particles[particleI];
+                a += Acceleration(particle, particle2) * DeltaTime;
+                particlesNum++;
+            }
+        }
+    }
+
+    return a;
+}
+
+float3 GetBoundPosDiff(float3 dist);
+
+float GetAttraction(ParticleInteractions interaction, float dist)
+{
+    float attractionForce = interaction.force;
+    float pushDistance = interaction.pushDst;
+    float pushForce = interaction.pushForce;
+    if (dist < pushDistance)
+        attractionForce = -abs(attractionForce) - pushForce;
+
+    float attraction = attractionForce / (dist * dist);
+
+    return attraction;
+}
+
+float3 Acceleration(Particle p1, Particle p2){
+    if(all(p1.position == p2.position))
+        return 0;
+    ParticleType type = ParticlesTypes[p1.type];
+    ParticleInteractions interaction;
+    bool interactionFound = false;
+
+
+    for(int i = type.interactionsStart; i < type.interactionsEnd; i++){
+        if(ParticlesInteractions[i].type == p2.type){
+            interaction = ParticlesInteractions[i];
+            interactionFound = true;
+            break;
+        }
+    }
+
+    if(!interactionFound)
+        return 0;
+
+    float3 insidePosDiff = p2.position - p1.position;
+    float3 posDiff = GetBoundPosDiff(insidePosDiff);
+    float3 otherDir = normalize(posDiff);
+    float dist = length(posDiff);
+
+    float attraction = GetAttraction(interaction, dist);
+
+    return otherDir * attraction;
+}
+
+float BoundVar(float x, float size);
+
+float3 GetBoundPosDiff(float3 dist)
+{
+    float x = BoundVar(dist.x, PlayAreaSize.x);
+    float y = BoundVar(dist.y, PlayAreaSize.y);
+
+    float3 aroundDist = float3(x, y, 0);
+
+    return aroundDist;
+}
+
+float BoundVar(float x, float size){
+    float extends = size / 2;
+    if (abs(x) > extends)
+    {
+        if (x < 0)
+            x += size;
+        else
+            x -= size;
+    }
+
+    return x;
+}
+
 int GetChunkId(float2 pos){
     pos -= PlayAreaMin.xy;
     int chunkX = pos.x / chunkData.x;
     int chunkY = pos.y / chunkData.y;
 
-    return chunkX + chunkData.z * chunkY;
+    int id = chunkX + chunkData.z * chunkY;
+    return clamp(id, 0, chunkData.z * chunkData.w);
 }
 
 float3 BoundsTeleport(float3 pos)

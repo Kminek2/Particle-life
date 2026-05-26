@@ -50,7 +50,9 @@ public class ShaderParticleSpawner : MonoBehaviour
             particleTypes.Add(new()
             {
                 dumping = particleSettings.dumping,
-                visual = visual
+                visual = visual,
+                interactionsStart = _interactions.Count,
+                interactionsEnd = _interactions.Count + particleSO.attractions.Count
             });
 
             SpawnParticles(particleSpawn, particleTypeIndex);

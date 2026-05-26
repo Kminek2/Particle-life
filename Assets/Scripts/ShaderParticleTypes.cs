@@ -4,8 +4,8 @@ using Unity.Mathematics;
 public struct ShaderParticleType
 {
     public float dumping;
-    int interactionsStart;
-    int interactionsEnd;
+    public int interactionsStart;
+    public int interactionsEnd;
     public ParticleVisual visual;
 };
 
