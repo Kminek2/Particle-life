@@ -1,27 +1,6 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
-
-struct Particle
-{
-    float3 position;
-    float3 velocity;
-    int type;
-};
-
-struct ParticleType
-{
-    float dumping;
-    int interactionsStart;
-    int interactionsEnd;
-};
-
-struct ParticleInteractions
-{
-    int type;
-    float force;
-    float pushDst;
-    float pushForce;
-};
+#include "Common.hlsl"
 
 float DeltaTime;
 float3 PlayAreaMin;

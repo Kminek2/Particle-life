@@ -24,31 +24,9 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
 
     private Dictionary<ParticleSO, int> _shaderParticleTypes = new();
 
-    struct ShaderParticleType
-    {
-        public float dumping;
-        int interactionsStart;
-        int interactionsEnd;
-    };
-
     private ShaderParticleType[] _shadersParticlesTypes;
 
-    struct ShaderParticle
-    {
-        public float3 position;
-        public float3 velocity;
-        public int type;
-    };
-
     private ShaderParticle[] _shadersParticles;
-
-    struct ShaderParticleInteractions
-    {
-        public int type;
-        public float force;
-        public float pushDst;
-        public float pushForce;
-    };
 
     private ShaderParticleInteractions[] _shadersParticleInteractions;
 
@@ -56,11 +34,28 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
 
     #endregion
 
-    #region Getters And Setters
+    #region Public
     public Dictionary<ParticleSO, List<Particle>> Particles
     {
         get { return _particles; }
         set { _particles = value; }
+    }
+
+    public ComputeBuffer ParticleBuffer
+    {
+        get { return _particlesBuffer; }
+        set { _particlesBuffer = value; }
+    }
+
+    public int ParticleBufferSize
+    {
+        get { return _shadersParticles.Count(); }
+    }
+
+    public ComputeBuffer ParticleTypesBuffer
+    {
+        get { return _particleTypesBuffer; }
+        set { _particleTypesBuffer = value; }
     }
 
     #endregion
@@ -79,6 +74,20 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
     {
         InitShaderVariables();
         InitBuffers();
+        DeleteNonNeededData();
+    }
+
+    void DeleteNonNeededData()
+    {
+        foreach (KeyValuePair<ParticleSO, List<Particle>> particlesList in _particles)
+        {
+            foreach (Particle particle in particlesList.Value)
+            {
+                Destroy(particle.gameObject);
+            }
+        }
+
+        _particles.Clear();
     }
 
     void InitShaderVariables()
@@ -103,7 +112,7 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
 
 
         _computeShader.SetVector("PlayAreaMin", _playBounds.min);
-        _computeShader.SetVector("PlayAreaSize", _playBounds.max);
+        _computeShader.SetVector("PlayAreaSize", _playBounds.size);
 
         _particlesBuffer.SetData(_shadersParticles);
         _computeShader.SetBuffer(_shaderKernel, "Particles", _particlesBuffer);
@@ -125,7 +134,6 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
     void Update()
     {
         DispatchComputes();
-        UpdateParticles();
     }
 
     void DispatchComputes()
@@ -133,23 +141,6 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
         _computeShader.SetFloat("DeltaTime", Time.deltaTime);
 
         _computeShader.Dispatch(_shaderKernel, Mathf.CeilToInt(_shadersParticles.Count() / 64.0f), 1, 1);
-
-        _particlesBuffer.GetData(_shadersParticles);
-    }
-
-    void UpdateParticles()
-    {
-        int i = 0;
-        foreach (KeyValuePair<ParticleSO, List<Particle>> kvpParticle in _particles)
-        {
-            foreach (Particle particle in kvpParticle.Value)
-            {
-                ShaderParticle shaderParticle = _shadersParticles[i];
-                particle.Velocity = shaderParticle.velocity;
-                particle.transform.position = shaderParticle.position;
-                i++;
-            }
-        }
     }
 
     #endregion
@@ -175,11 +166,18 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
 
         for (int i = 0; i < particleTypesKeys.Count; i++)
         {
-            GetShaderParticleType(particleTypesKeys.ElementAt(i));
-            ParticleSettingsSO particleSettings = particleTypesKeys.ElementAt(i).particleSettings;
+            ParticleSO particleSO = particleTypesKeys.ElementAt(i);
+            GetShaderParticleType(particleSO);
+            ParticleSettingsSO particleSettings = particleSO.particleSettings;
+            ParticleVisual visual = new()
+            {
+                color = new(particleSO.color.r, particleSO.color.g, particleSO.color.b, particleSO.color.a),
+                radius = particleSettings.size
+            };
             particleTypes[i] = new()
             {
-                dumping = particleSettings.dumping
+                dumping = particleSettings.dumping,
+                visual = visual
             };
         }
 
@@ -231,8 +229,11 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
 
         int i = 0;
         foreach (ParticleSO particleSO in particleTypes)
+        {
             if (particleSO == particle)
                 return i;
+            i++;
+        }
 
         throw new System.Exception("IDK :D");
     }

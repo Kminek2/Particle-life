@@ -1,0 +1,49 @@
+#pragma kernel CSMain
+#include "Common.hlsl"
+
+StructuredBuffer<ParticleType> ParticlesTypes;
+StructuredBuffer<Particle> Particles;
+uint ParticlesLength;
+float3 pixelStart;
+float2 pixelSize;
+
+RWTexture2D<float4> Result;
+
+float4 GetParticleColor(Particle particle, float3 pixelPos);
+
+float3 GetPixelPos(uint2 pixelId){
+    return float3(pixelId * pixelSize - pixelSize * 0.5 + pixelStart.xy, 0);
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    uint width, height;
+    Result.GetDimensions(width, height);
+
+    if(id.x > width || id.y > height)
+        return;
+    float4 colorSum = 0;
+
+    for(uint i = 0; i < ParticlesLength; i++){
+        Particle particle = Particles[i];
+        colorSum += GetParticleColor(Particles[i], GetPixelPos(id.xy));
+        if(colorSum.a > 0) // Performance :(
+            break;
+    }
+
+    float4 color = colorSum / colorSum.w;
+
+    Result[id.xy] = color;
+}
+
+bool IsParticleInPixel(ParticleType particle, float3 particlePos, float3 pixelPos){
+    return dot(particlePos - pixelPos, particlePos - pixelPos) <= particle.visual.radius * particle.visual.radius;
+}
+
+float4 GetParticleColor(Particle particle, float3 pixelPos){
+    ParticleType type = ParticlesTypes[particle.type];
+    if(IsParticleInPixel(type, particle.position, pixelPos))
+        return float4(type.visual.color);
+    return 0;
+}
