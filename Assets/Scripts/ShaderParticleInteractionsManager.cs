@@ -24,6 +24,8 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
     private ComputeBuffer _particleInteractionsBuffer;
     private ComputeBuffer _particlesBuffer;
 
+    private ComputeBuffer _particleChangesBuffer;
+
     private int _shaderParticleCount;
 
     int _shaderKernel;
@@ -77,11 +79,12 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
         chunker.SetupShader();
     }
 
-    public void SetShaderData(ShaderParticleType[] shadersParticlesTypes, ShaderParticle[] shadersParticles, ShaderParticleInteractions[] shadersParticleInteractions)
+    public void SetShaderData(ShaderParticleType[] shadersParticlesTypes, ShaderParticle[] shadersParticles, ShaderParticleInteractions[] shadersParticleInteractions, ShaderParticleChanges[] shaderParticleChanges)
     {
         InitBuffer(ref _particleTypesBuffer, shadersParticlesTypes);
         InitBuffer(ref _particleInteractionsBuffer, shadersParticleInteractions);
         InitBuffer(ref _particlesBuffer, shadersParticles);
+        InitBuffer(ref _particleChangesBuffer, shaderParticleChanges);
 
         _particleTypesBuffer.SetData(shadersParticlesTypes);
         _particleInteractionsBuffer.SetData(shadersParticleInteractions);
@@ -100,6 +103,9 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
         _computeShader.SetInt("ParticlesLength", _shaderParticleCount);
 
         _computeShader.SetBuffer(_shaderKernel, "Chunks", chunker.ChunkingBuffer);
+
+        _particleChangesBuffer.SetData(shaderParticleChanges);
+        _computeShader.SetBuffer(_shaderKernel, "ParticleChangesBuffer", _particleChangesBuffer);
     }
 
     void InitShaderVariables()
@@ -149,6 +155,7 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
         _particlesBuffer?.Release();
         _particleInteractionsBuffer?.Release();
         _particleTypesBuffer?.Release();
+        _particleChangesBuffer?.Release();
     }
 
     #endregion

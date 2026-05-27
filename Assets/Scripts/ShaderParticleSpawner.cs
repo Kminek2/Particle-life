@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ShaderParticleSpawner : MonoBehaviour
@@ -10,6 +11,8 @@ public class ShaderParticleSpawner : MonoBehaviour
     private readonly List<ShaderParticle> _spawnedParticles = new();
     private readonly List<ShaderParticleInteractions> _interactions = new();
 
+    private readonly List<ShaderParticleChanges> _changes = new();
+
     private void Start()
     {
         if (ShaderParticleInteractionsManager.Instance.Particles == null)
@@ -18,6 +21,7 @@ public class ShaderParticleSpawner : MonoBehaviour
         _shaderParticleTypes.Clear();
         _spawnedParticles.Clear();
         _interactions.Clear();
+        _changes.Clear();
 
         gameObject.SetActive(false);
     }
@@ -27,14 +31,15 @@ public class ShaderParticleSpawner : MonoBehaviour
         ShaderParticleType[] particleTypes = GenerateParticleTypes();
         ShaderParticle[] shaderParticles = _spawnedParticles.ToArray();
         ShaderParticleInteractions[] shaderParticleInteractions = _interactions.ToArray();
+        ShaderParticleChanges[] particleChanges = _changes.ToArray();
 
-        ShaderParticleInteractionsManager.Instance.SetShaderData(particleTypes, shaderParticles, shaderParticleInteractions);
+        ShaderParticleInteractionsManager.Instance.SetShaderData(particleTypes, shaderParticles, shaderParticleInteractions, particleChanges);
     }
 
     private ShaderParticleType[] GenerateParticleTypes()
     {
-        List<ShaderParticleType> particleTypes = new();
         List<ParticleSpawnSettings> particleSpawnSettings = _spawnSettings.particleNum;
+        ShaderParticleType[] particleTypes = new ShaderParticleType[particleSpawnSettings.Count];
 
         for (int i = 0; i < particleSpawnSettings.Count; i++)
         {
@@ -47,17 +52,33 @@ public class ShaderParticleSpawner : MonoBehaviour
                 color = new(particleSO.color.r, particleSO.color.g, particleSO.color.b, particleSO.color.a),
                 radius = particleSettings.size
             };
-            particleTypes.Add(new()
+            particleTypes[particleTypeIndex] = new()
             {
                 dumping = particleSettings.dumping,
                 visual = visual,
                 interactionsStart = _interactions.Count,
-                interactionsEnd = _interactions.Count + particleSO.attractions.Count
-            });
+                interactionsEnd = _interactions.Count + particleSO.attractions.Count,
+                changesStart = _changes.Count,
+                changesEnd = _changes.Count + particleSO.particleChanges.Count
+            };
 
             SpawnParticles(particleSpawn, particleTypeIndex);
             GenerateAttraction(particleSO);
+            GenerateChanges(particleSO);
         }
+
+        // foreach (ShaderParticle particle in _spawnedParticles)
+        // {
+        //     Debug.Log(particle.type);
+        //     Debug.Log(particleTypes[particle.type].visual.color);
+        //     Debug.Log(particleTypes[particle.type].changesStart + ", " + particleTypes[particle.type].changesEnd);
+        //     Debug.Log("Color: " + particleTypes[_changes[particleTypes[particle.type].changesStart].type].visual.color);
+        // }
+
+        // foreach (ShaderParticleChanges ch in _changes)
+        // {
+        //     Debug.Log(ch.dist + ", " + ch.type + ", " + ch.typeTo);
+        // }
 
         return particleTypes.ToArray();
     }
@@ -87,8 +108,24 @@ public class ShaderParticleSpawner : MonoBehaviour
             {
                 type = type,
                 force = attraction.force,
+                forceDst = attraction.forceDst,
                 pushDst = particleSettings.pushDistance,
                 pushForce = particleSettings.pushForce
+            });
+        }
+    }
+
+    private void GenerateChanges(ParticleSO particleSO)
+    {
+        foreach (ParticleChanges changes in particleSO.particleChanges)
+        {
+            int type = GetShaderParticleType(changes.particle);
+            int changeTo = GetShaderParticleType(changes.changeTo);
+            _changes.Add(new()
+            {
+                type = type,
+                dist = changes.dist,
+                typeTo = changeTo
             });
         }
     }

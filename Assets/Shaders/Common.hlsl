@@ -20,6 +20,8 @@ struct ParticleType
     float dumping;
     int interactionsStart;
     int interactionsEnd;
+    int changesStart;
+    int changesEnd;
     ParticleVisual visual;
 };
 
@@ -27,6 +29,7 @@ struct ParticleInteractions
 {
     int type;
     float force;
+    float forceDst;
     float pushDst;
     float pushForce;
 };
@@ -36,6 +39,13 @@ struct Chunk
     float3 pos;
     int particlesStart;
     int particlesNum;
+};
+
+struct ParticleChanges
+{
+    int type;
+    float dist;
+    int typeTo;
 };
 
 #endif

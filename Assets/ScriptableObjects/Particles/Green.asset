@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2135c4f9cc02e9344ace620fa634a1f6, type: 3}
+  m_Name: Green
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleSO
+  attractions:
+  - particle: {fileID: 11400000}
+    force: -10
+    forceDst: 100
+  - particle: {fileID: 11400000, guid: c27737137475dfe4b91d772502508366, type: 2}
+    force: 400
+    forceDst: 100
+  - particle: {fileID: 11400000, guid: 1b888dd537c99d34ea9be14d42dce5a1, type: 2}
+    force: 10
+    forceDst: 100
+  - particle: {fileID: 11400000, guid: b5e0ec3999a144d4a9dee7ef2d230adf, type: 2}
+    force: 50
+    forceDst: 100
+  - particle: {fileID: 11400000, guid: c27737137475dfe4b91d772502508366, type: 2}
+    force: -500
+    forceDst: 5
+  - particle: {fileID: 11400000, guid: 3982aab50321db445a4d68edf7d92f4a, type: 2}
+    force: -50
+    forceDst: 3
+  particleChanges: []
+  particleSettings: {fileID: 11400000, guid: 9fa5f2d22e7a9ae4b9cf38029aaf9050, type: 2}
+  color: {r: 0.12834764, g: 1, b: 0, a: 1}

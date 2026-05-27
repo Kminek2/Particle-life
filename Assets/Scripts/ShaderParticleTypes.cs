@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
 
@@ -6,6 +7,8 @@ public struct ShaderParticleType
     public float dumping;
     public int interactionsStart;
     public int interactionsEnd;
+    public int changesStart;
+    public int changesEnd;
     public ParticleVisual visual;
 };
 
@@ -21,6 +24,7 @@ public struct ShaderParticleInteractions
 {
     public int type;
     public float force;
+    public float forceDst;
     public float pushDst;
     public float pushForce;
 };
@@ -36,4 +40,11 @@ public struct Chunks
     public float3 pos;
     public int particlesStart;
     public int particlesNum;
+}
+
+public struct ShaderParticleChanges
+{
+    public int type;
+    public float dist;
+    public int typeTo;
 }

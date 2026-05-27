@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2135c4f9cc02e9344ace620fa634a1f6, type: 3}
+  m_Name: Red
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleSO
+  attractions:
+  - particle: {fileID: 11400000}
+    force: -10
+    forceDst: 100
+  - particle: {fileID: 11400000, guid: 731c48e97f46d444db8aa11767f3116b, type: 2}
+    force: 70
+    forceDst: 100
+  particleChanges: []
+  particleSettings: {fileID: 11400000, guid: 9fa5f2d22e7a9ae4b9cf38029aaf9050, type: 2}
+  color: {r: 1, g: 0, b: 0, a: 1}

@@ -7,6 +7,7 @@ public class ParticleSO : ScriptableObject
 {
     [Header("Interactions")]
     public List<ParticleAttraction> attractions;
+    public List<ParticleChanges> particleChanges;
     [Header("Global Settings")]
     public ParticleSettingsSO particleSettings;
     [Header("Visuals")]
@@ -18,4 +19,13 @@ public struct ParticleAttraction
 {
     public ParticleSO particle;
     public float force;
+    public float forceDst;
+}
+
+[Serializable]
+public struct ParticleChanges
+{
+    public ParticleSO particle;
+    public float dist;
+    public ParticleSO changeTo;
 }

@@ -10,12 +10,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2135c4f9cc02e9344ace620fa634a1f6, type: 3}
-  m_Name: TestParticle2
+  m_Name: Blue
   m_EditorClassIdentifier: Assembly-CSharp::ParticleSO
   attractions:
   - particle: {fileID: 11400000}
     force: 100
+    forceDst: 100
   - particle: {fileID: 11400000, guid: b5e0ec3999a144d4a9dee7ef2d230adf, type: 2}
+    force: -10
+    forceDst: 100
+  - particle: {fileID: 11400000, guid: 731c48e97f46d444db8aa11767f3116b, type: 2}
+    force: -200
+    forceDst: 3
+  - particle: {fileID: 11400000, guid: 3982aab50321db445a4d68edf7d92f4a, type: 2}
+    force: 40
+    forceDst: 100
+  - particle: {fileID: 11400000, guid: db29bd48a5507074ab0cce55e3de5748, type: 2}
     force: -20
+    forceDst: 100
+  particleChanges:
+  - particle: {fileID: 11400000, guid: 731c48e97f46d444db8aa11767f3116b, type: 2}
+    dist: 2.5
+    changeTo: {fileID: 11400000, guid: 3982aab50321db445a4d68edf7d92f4a, type: 2}
   particleSettings: {fileID: 11400000, guid: 9fa5f2d22e7a9ae4b9cf38029aaf9050, type: 2}
   color: {r: 0, g: 0.18980193, b: 1, a: 1}

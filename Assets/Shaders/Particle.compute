@@ -7,6 +7,7 @@ float3 PlayAreaMin;
 float3 PlayAreaSize;
 StructuredBuffer<ParticleType> ParticlesTypes;
 StructuredBuffer<ParticleInteractions> ParticlesInteractions;
+StructuredBuffer<ParticleChanges> ParticleChangesBuffer;
 RWStructuredBuffer<Particle> Particles;
 StructuredBuffer<Chunk> Chunks;
 uint ParticlesLength;
@@ -18,6 +19,7 @@ float3 DumpVelocity(float3 velocity, ParticleType type);
 float BoundVariable(float var, float boundSize);
 int GetChunkId(float2 pos);
 float3 InteractionAcceleration(Particle particle);
+int ExplodeType(Particle particle);
 
 [numthreads(64,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -29,9 +31,63 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     particle.velocity += InteractionAcceleration(particle);
     particle.position = Move(particle.position, particle.velocity);
     particle.position = BoundsTeleport(particle.position);
+    particle.type = ExplodeType(particle);
     particle.velocity = DumpVelocity(particle.velocity, particleType);
     particle.chunkId = GetChunkId(particle.position.xy);
     Particles[id.x] = particle;
+}
+
+int TypeInteraction(Particle p1, Particle p2){
+    if(all(p1.position == p2.position))
+        return p1.type;
+    ParticleType type = ParticlesTypes[p1.type];
+
+    for(int i = type.changesStart; i < type.changesEnd; i++){
+        if(ParticleChangesBuffer[i].type == p2.type){
+            ParticleChanges changes = ParticleChangesBuffer[i];
+
+            if(distance(p1.position, p2.position) <= changes.dist)
+                return changes.typeTo;
+        }
+    }
+
+    return p1.type;
+}
+
+int ExplodeType(Particle particle){
+    float3 pos = particle.position;
+    int type = particle.type;
+    for(float posX = pos.x - chunkData.x; posX <= pos.x + chunkData.x; posX += chunkData.x){
+        for(float posY = pos.y - chunkData.y; posY <= pos.y + chunkData.y; posY += chunkData.y){
+            float3 chunkCheckPos = float3(posX, posY, 0);
+            int chunkId = GetChunkId(chunkCheckPos.xy);
+
+            if(chunkId < 0 || chunkId >= chunkData.z * chunkData.w)
+                continue;
+
+            Chunk chunk = Chunks[chunkId];
+            int chunkStart = chunk.particlesStart;
+            if (chunkStart < 0)
+                continue;
+
+            uint particlesNum = 0;
+            uint upperParticleLimit = chunk.particlesNum * 2;
+
+            for(uint i = 0; i < upperParticleLimit && particlesNum < chunk.particlesNum; i++){
+                int particleI = chunkStart + int(i);
+                if (particleI >= int(ParticlesLength))
+                    break;
+
+                Particle particle2 = Particles[particleI];
+                int typeChange = TypeInteraction(particle, particle2);
+                if(type != typeChange)
+                    return typeChange;
+                particlesNum++;
+            }
+        }
+    }
+
+    return type;
 }
 
 float3 Acceleration(Particle p1, Particle p2);
@@ -85,6 +141,20 @@ float GetAttraction(ParticleInteractions interaction, float dist)
     return attraction;
 }
 
+float3 Acc(Particle p1, Particle p2, ParticleInteractions interaction){
+    float3 insidePosDiff = p2.position - p1.position;
+    float3 posDiff = GetBoundPosDiff(insidePosDiff);
+    float3 otherDir = normalize(posDiff);
+    float dist = length(posDiff);
+
+    if(dist > interaction.forceDst)
+        return 0;
+
+    float attraction = GetAttraction(interaction, dist);
+
+    return otherDir * attraction;
+}
+
 float3 Acceleration(Particle p1, Particle p2){
     if(all(p1.position == p2.position))
         return 0;
@@ -92,26 +162,18 @@ float3 Acceleration(Particle p1, Particle p2){
     ParticleInteractions interaction;
     bool interactionFound = false;
 
+    float3 a = 0;
 
     for(int i = type.interactionsStart; i < type.interactionsEnd; i++){
         if(ParticlesInteractions[i].type == p2.type){
             interaction = ParticlesInteractions[i];
             interactionFound = true;
-            break;
+
+            a += Acc(p1, p2, interaction);
         }
     }
 
-    if(!interactionFound)
-        return 0;
-
-    float3 insidePosDiff = p2.position - p1.position;
-    float3 posDiff = GetBoundPosDiff(insidePosDiff);
-    float3 otherDir = normalize(posDiff);
-    float dist = length(posDiff);
-
-    float attraction = GetAttraction(interaction, dist);
-
-    return otherDir * attraction;
+    return a;
 }
 
 float BoundVar(float x, float size);
