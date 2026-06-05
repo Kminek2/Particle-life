@@ -67,19 +67,6 @@ public class ShaderParticleSpawner : MonoBehaviour
             GenerateChanges(particleSO);
         }
 
-        // foreach (ShaderParticle particle in _spawnedParticles)
-        // {
-        //     Debug.Log(particle.type);
-        //     Debug.Log(particleTypes[particle.type].visual.color);
-        //     Debug.Log(particleTypes[particle.type].changesStart + ", " + particleTypes[particle.type].changesEnd);
-        //     Debug.Log("Color: " + particleTypes[_changes[particleTypes[particle.type].changesStart].type].visual.color);
-        // }
-
-        // foreach (ShaderParticleChanges ch in _changes)
-        // {
-        //     Debug.Log(ch.dist + ", " + ch.type + ", " + ch.typeTo);
-        // }
-
         return particleTypes.ToArray();
     }
 
@@ -110,6 +97,7 @@ public class ShaderParticleSpawner : MonoBehaviour
                 force = attraction.force,
                 forceDst = attraction.forceDst,
                 pushDst = particleSettings.pushDistance,
+                pushDstSmoothing = particleSettings.pushDstSmoothing,
                 pushForce = particleSettings.pushForce
             });
         }

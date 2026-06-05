@@ -31,6 +31,7 @@ struct ParticleInteractions
     float force;
     float forceDst;
     float pushDst;
+    float pushDstSmoothing;
     float pushForce;
 };
 

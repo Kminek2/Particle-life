@@ -9,5 +9,6 @@ public class ParticleSettingsSO : ScriptableObject
 
     public float dumping;
     public float pushDistance;
+    public float pushDstSmoothing;
     public float pushForce;
 }

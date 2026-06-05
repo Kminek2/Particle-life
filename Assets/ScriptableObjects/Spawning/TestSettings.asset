@@ -14,20 +14,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpawnSettingsSO
   particleNum:
   - particle: {fileID: 11400000, guid: b5e0ec3999a144d4a9dee7ef2d230adf, type: 2}
-    num: 2000
+    num: 1000
     spawnVelocity: 0
   - particle: {fileID: 11400000, guid: 1b888dd537c99d34ea9be14d42dce5a1, type: 2}
     num: 10000
     spawnVelocity: 0
   - particle: {fileID: 11400000, guid: c27737137475dfe4b91d772502508366, type: 2}
-    num: 2000
+    num: 100
     spawnVelocity: 10
   - particle: {fileID: 11400000, guid: c1c1546716ed33b4aab262c87ca64a03, type: 2}
-    num: 10000
+    num: 20000
     spawnVelocity: 0
   - particle: {fileID: 11400000, guid: 731c48e97f46d444db8aa11767f3116b, type: 2}
-    num: 2000
+    num: 500
     spawnVelocity: 0
   - particle: {fileID: 11400000, guid: 3982aab50321db445a4d68edf7d92f4a, type: 2}
-    num: 2000
+    num: 5000
     spawnVelocity: 0
+  - particle: {fileID: 11400000, guid: db29bd48a5507074ab0cce55e3de5748, type: 2}
+    num: 10000
+    spawnVelocity: 0
+  - particle: {fileID: 11400000, guid: ab72c0d1ac6da2c41b960876287fd965, type: 2}
+    num: 100
+    spawnVelocity: 10

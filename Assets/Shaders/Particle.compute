@@ -132,9 +132,16 @@ float GetAttraction(ParticleInteractions interaction, float dist)
 {
     float attractionForce = interaction.force;
     float pushDistance = interaction.pushDst;
+    float pushDstMax = pushDistance + interaction.pushDstSmoothing;
     float pushForce = interaction.pushForce;
-    if (dist < pushDistance)
-        attractionForce = -abs(attractionForce) - pushForce;
+    if (dist < pushDstMax){
+        float inside = pushDstMax - dist;
+        float percentage = inside / pushDistance;
+        attractionForce = lerp(attractionForce, -abs(attractionForce) - pushForce, percentage);
+    }
+
+    if(dist < 0.5)
+        dist = 0.5;
 
     float attraction = attractionForce / (dist * dist);
 
@@ -233,7 +240,8 @@ float BoundVariable(float var, float boundSize){
 float3 DumpVelocity(float3 velocity, ParticleType type){
     float dumping = type.dumping * DeltaTime;
     float velocityLeft = 1 - dumping;
-    return velocity * velocityLeft;
+    velocity = (velocity == 0) ? 1 : velocity;
+    return (velocity * velocity * velocityLeft) / velocity;
 }
 
 float3 Move(float3 pos, float3 velocity){

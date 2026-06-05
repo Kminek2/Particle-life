@@ -15,5 +15,6 @@ MonoBehaviour:
   sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   size: 1
   dumping: 1
-  pushDistance: 1.5
+  pushDistance: 1
+  pushDstSmoothing: 1
   pushForce: 10

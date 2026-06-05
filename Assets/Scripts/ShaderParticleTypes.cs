@@ -26,6 +26,7 @@ public struct ShaderParticleInteractions
     public float force;
     public float forceDst;
     public float pushDst;
+    public float pushDstSmoothing;
     public float pushForce;
 };
 
