@@ -8,12 +8,15 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
 {
     private Dictionary<ParticleSO, List<Particle>> _particles;
     [SerializeField] private Collider2D _playArea;
+    [SerializeField] private int _timeSmoothing = 10;
     private Bounds _playBounds;
 
     public static ShaderParticleInteractionsManager Instance
     {
         get; private set;
     }
+
+    private Queue<float> _deltaTimesQueue = new();
 
     #region Shader Vars
 
@@ -27,6 +30,8 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
     private ComputeBuffer _particleChangesBuffer;
 
     private int _shaderParticleCount;
+
+    private float _deltaTimeSum = 0;
 
     int _shaderKernel;
 
@@ -69,6 +74,7 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
         if (Instance != null)
             Destroy(this);
         Instance = this;
+
 
         _playBounds = _playArea.bounds;
     }
@@ -127,6 +133,7 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
 
     void Update()
     {
+        UpdateDeltaTimes();
         DispatchComputes();
         if (Time.frameCount < 10)
             return;
@@ -137,9 +144,19 @@ public class ShaderParticleInteractionsManager : MonoBehaviour
             chunker.CPUChunk();
     }
 
+    void UpdateDeltaTimes()
+    {
+        _deltaTimesQueue.Enqueue(Time.deltaTime);
+        _deltaTimeSum += Time.deltaTime;
+        if (_deltaTimesQueue.Count > _timeSmoothing)
+            _deltaTimeSum -= _deltaTimesQueue.Dequeue();
+        Debug.Log(_deltaTimeSum);
+    }
+
     void DispatchComputes()
     {
-        _computeShader.SetFloat("DeltaTime", Time.deltaTime);
+        float deltaTime = _deltaTimeSum / _deltaTimesQueue.Count;
+        _computeShader.SetFloat("DeltaTime", deltaTime);
         _computeShader.SetVector("chunkData", new Vector4(chunker.ChunkSize.x, chunker.ChunkSize.y, chunker.ChunkNum.x, chunker.ChunkNum.y));
 
         _computeShader.Dispatch(_shaderKernel, Mathf.CeilToInt(_shaderParticleCount / 64.0f), 1, 1);
